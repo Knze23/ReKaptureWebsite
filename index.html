@@ -17,9 +17,19 @@
   <header class="topbar">
     <a class="brand" href="#inicio" aria-label="ReKapture, inicio"><img src="assets/rekapture-logo.png" alt=""><span>Re<span class="brand-accent">Kapture</span></span></a>
     <nav aria-label="Navegación principal"><a href="#funciones">Funciones</a><a href="#capturas">La interfaz</a><a href="#novedades">Novedades</a></nav>
-    <div class="topbar-tools"><span class="status"><i></i> VERSION 0.6.0 DISPONIBLE</span><button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro"><svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.4A8.6 8.6 0 0 1 8.6 3.8 8.7 8.7 0 1 0 20.2 15.4Z"/></svg><svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg><span>Modo oscuro</span></button></div>
+    <div class="topbar-tools"><span class="status"><i></i> VERSION 0.6.0 DISPONIBLE</span><button class="donate-trigger" id="donate-trigger" type="button">Donar</button><button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro"><svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.4A8.6 8.6 0 0 1 8.6 3.8 8.7 8.7 0 1 0 20.2 15.4Z"/></svg><svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg><span>Modo oscuro</span></button></div>
   </header>
 
+  <dialog class="donation-dialog" id="donation-dialog" aria-labelledby="donation-title">
+    <div class="donation-dialog-inner">
+      <h2 class="visually-hidden" id="donation-title">Video de donativos para ReKapture</h2>
+      <button class="donation-close" id="donation-close" type="button" aria-label="Cerrar video">&times; <span>Cerrar</span></button>
+      <video id="donation-video" controls playsinline preload="none" aria-label="Video de donativos para ReKapture">
+        <source src="assets/Donar.mp4" type="video/mp4">
+        Tu navegador no puede reproducir este video.
+      </video>
+    </div>
+  </dialog>
   <main>
     <section class="hero" id="inicio">
       <div class="hero-copy">
@@ -78,6 +88,10 @@
     document.querySelectorAll('[data-placeholder-link]').forEach(link => link.addEventListener('click', event => event.preventDefault()));
     const downloadTrigger = document.getElementById('download-trigger');
     const downloadOptions = document.getElementById('download-options');
+    const donateTrigger = document.getElementById('donate-trigger');
+    const donationDialog = document.getElementById('donation-dialog');
+    const donationClose = document.getElementById('donation-close');
+    const donationVideo = document.getElementById('donation-video');
     const closeDownloadMenu = () => {
       downloadOptions.hidden = true;
       downloadTrigger.setAttribute('aria-expanded', 'false');
@@ -87,11 +101,25 @@
       downloadTrigger.setAttribute('aria-expanded', String(!isOpen));
       downloadOptions.hidden = isOpen;
     });
+    donateTrigger.addEventListener('click', () => {
+      closeDownloadMenu();
+      donationDialog.showModal();
+      const playback = donationVideo.play();
+      if (playback) playback.catch(() => {});
+    });
+    donationClose.addEventListener('click', () => donationDialog.close());
+    donationDialog.addEventListener('close', () => {
+      donationVideo.pause();
+      donationVideo.currentTime = 0;
+    });
+    donationDialog.addEventListener('click', event => {
+      if (event.target === donationDialog) donationDialog.close();
+    });
     document.addEventListener('click', event => {
       if (!event.target.closest('.download-menu')) closeDownloadMenu();
     });
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !donationDialog.open) {
         closeDownloadMenu();
         downloadTrigger.focus();
       }
