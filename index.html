@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="./styles.css?v=0.6.0">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -25,9 +25,10 @@
       <h2 class="visually-hidden" id="donation-title">Video de donativos para ReKapture</h2>
       <button class="donation-close" id="donation-close" type="button" aria-label="Cerrar video">&times; <span>Cerrar</span></button>
       <video id="donation-video" controls playsinline preload="none" aria-label="Video de donativos para ReKapture">
-        <source src="assets/Donar.mp4" type="video/mp4">
+        <source src="./assets/Donar.mp4" type="video/mp4">
         Tu navegador no puede reproducir este video.
       </video>
+      <div class="donation-status" id="donation-status" role="status" aria-live="polite"><span class="donation-spinner" aria-hidden="true"></span><span id="donation-status-text">Cargando video...</span></div>
     </div>
   </dialog>
   <main>
@@ -92,6 +93,8 @@
     const donationDialog = document.getElementById('donation-dialog');
     const donationClose = document.getElementById('donation-close');
     const donationVideo = document.getElementById('donation-video');
+    const donationStatus = document.getElementById('donation-status');
+    const donationStatusText = document.getElementById('donation-status-text');
     const closeDownloadMenu = () => {
       downloadOptions.hidden = true;
       downloadTrigger.setAttribute('aria-expanded', 'false');
@@ -104,13 +107,28 @@
     donateTrigger.addEventListener('click', () => {
       closeDownloadMenu();
       donationDialog.showModal();
+      donationStatus.hidden = false;
+      donationStatus.classList.remove('has-error');
+      donationStatusText.textContent = 'Cargando video...';
+      donationVideo.load();
       const playback = donationVideo.play();
-      if (playback) playback.catch(() => {});
+      if (playback) playback.catch(() => {
+        donationStatus.classList.add('has-error');
+        donationStatusText.textContent = 'Presiona reproducir para iniciar el video.';
+      });
+    });
+    donationVideo.addEventListener('playing', () => { donationStatus.hidden = true; });
+    donationVideo.addEventListener('waiting', () => { donationStatus.hidden = false; });
+    donationVideo.addEventListener('error', () => {
+      donationStatus.hidden = false;
+      donationStatus.classList.add('has-error');
+      donationStatusText.textContent = 'No se pudo cargar el video.';
     });
     donationClose.addEventListener('click', () => donationDialog.close());
     donationDialog.addEventListener('close', () => {
       donationVideo.pause();
       donationVideo.currentTime = 0;
+      donationStatus.hidden = true;
     });
     donationDialog.addEventListener('click', event => {
       if (event.target === donationDialog) donationDialog.close();
